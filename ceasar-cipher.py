@@ -1,8 +1,9 @@
-from email import message
+# if eve knows the algorithm, she can get the correct key by brute force
+# Crypto Rule 1 - Kerckhoff's Principle, Eve should not be able to break the cipher even if she knows the cipher
+letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 def gen_key(n):
-    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     key = {}
     count = 0
     for c in letters:
@@ -36,3 +37,9 @@ cipher = encrypt(key, "CEASAR IS DEAD")
 
 print(cipher)
 print(decrypt(key, cipher))
+
+print("\nAttack:\n")
+for i in range(len(letters)):
+    key = gen_key(i + 1)
+    message = encrypt(key, cipher)
+    print(message)
