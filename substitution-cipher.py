@@ -2,7 +2,7 @@ import random
 
 
 def gen_key():
-    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
     urne = list(letters)
     key_map = {}
 
