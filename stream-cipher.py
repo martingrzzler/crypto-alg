@@ -18,22 +18,21 @@ class KeyStream:
         self.next = self.initial
 
 
-def encrypt(key: KeyStream, message: str):
-    return bytes([message[i] ^ key.get_key_byte() for i in range(len(message))])
+def encrypt(k: KeyStream, message: str):
+    return bytes([message[i] ^ k.get_key_byte() for i in range(len(message))])
 
 
-key = KeyStream()
+key = KeyStream(11)
 
 message = "Stream Cipher don't require long keys".encode()
 cipher = encrypt(key, message)
 print(f"Cipher: {cipher}")
-key.reset()
-print(f"Message: {encrypt(key, cipher)}")
+print(f"Message: {encrypt(KeyStream(11), cipher)}")
 
-# -------- Authenticity fault -------------
+# -------- Authenticity problem -------------
 
 # xor ing with zero doesn't change anything
-# Bob can modify the message if he knows the original message and the cipher like this
+# Bob can modify the message if he knows the original structure of message and the cipher like this
 # C = Cipher, K = Key, B = Bob's byte
 # 1. Alice M xor K = C
 # 2. Bob   M xor B = B'
@@ -59,3 +58,40 @@ cipher = alter(cipher)
 print(f"altered cipher:         {cipher}")
 key.reset()
 print(f"Decrypted Altered Message: {encrypt(key, cipher)}")
+
+
+def hack_key(message, cipher):
+    return bytes([message[i] ^ cipher[i] for i in range(len(cipher))])
+
+
+def hack_message(a, b):
+    l = min(len(a), len(b))
+    return bytes([a[i] ^ b[i] for i in range(l)])
+
+
+# ----------- Reuse Key Problem --------------------
+print("\nKey Reuse Problem\n")
+# Eve
+eve_msg = "Top secret message for alice".encode()
+print(f"Eve sends initial message to Alice: {eve_msg}")
+
+# Alice
+alice_key = KeyStream(10)
+alice_to_bob = eve_msg
+alice_to_bob_cipher = encrypt(alice_key, alice_to_bob)
+
+# Bob
+bob_key = KeyStream(10)
+message = encrypt(bob_key, alice_to_bob_cipher)
+print(f"Bob gets Eve's message by Alice: {message}")
+
+# Eve
+hacked_key = hack_key(eve_msg, alice_to_bob_cipher)
+
+# Alice sends new message to bob with same key stream as before
+new_msg = "Eve is evil don't you think".encode()
+new_msg_cipher = encrypt(KeyStream(10), new_msg)
+
+# Eve can now decrypt this message
+hacked_message = hack_message(hacked_key, new_msg_cipher)
+print(f"Hacked Message: {hacked_message}")
