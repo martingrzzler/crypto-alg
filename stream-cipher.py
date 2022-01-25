@@ -1,6 +1,9 @@
+import random
+
 # if some individual bits get flipped it's not a problem because the rest of the message will
 # be decrypted independantly
 # but they are not authentic by default
+
 
 class KeyStream:
     def __init__(self, key=1):
@@ -12,7 +15,7 @@ class KeyStream:
         return self.next
 
     def get_key_byte(self):
-        return self.rand() % 256
+        return (self.rand() >> 23)
 
     def reset(self):
         self.next = self.initial
@@ -95,3 +98,39 @@ new_msg_cipher = encrypt(KeyStream(10), new_msg)
 # Eve can now decrypt this message
 hacked_message = hack_message(hacked_key, new_msg_cipher)
 print(f"Hacked Message: {hacked_message}")
+
+# ------------------- Brute Force Key Stream ----------------------
+print("\nBrute Force Attack\n")
+
+
+def brute_force(plain, cipher):
+    for k in range(2**31):
+        bf_key = KeyStream(k)
+        for i in range(len(plain)):
+            if (bf_key.get_key_byte() ^ cipher[i]) != plain[i]:
+                break
+        else:
+            return k
+    return None
+
+
+# Alice
+secret_key = random.randrange(0, 2**20)
+print(f"Alice's key stream seed: {secret_key}")
+key = KeyStream(secret_key)
+header = "Message: "
+message = header + "My deepest secret"
+message = message.encode()
+cipher = encrypt(key, message)
+print(f"Alice message: {message}")
+print(f"Cipher: {cipher}")
+
+# Bob
+key = KeyStream(secret_key)
+message = encrypt(key, cipher)
+print(f"Bob received and decrypted message: f{message}")
+
+# Eve
+hacked_key = brute_force(header.encode(), cipher)
+print(hacked_key)
+print(f"Hacked message: {encrypt(KeyStream(hacked_key), cipher)}")
