@@ -65,6 +65,9 @@ bob_key = (g_a**b) % p
 
 print(f"Alice's key: {alice_key}, Bob's key: {bob_key}")
 
+# if p is big enough (more than 2000 bits) tham Eve than it's just infeasable for Eve to get either a or b
+# it would take to much time to brute force
+
 
 
 
